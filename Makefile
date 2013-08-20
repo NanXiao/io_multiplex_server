@@ -1,4 +1,4 @@
 all:
-	gcc -g -o io_multiplex_server main.c io_multiplex_server.c -lsocket -lnsl -lresolv
+	gcc -g -o io_multiplex_server main.c io_multiplex_server.c -lsocket -lnsl -lresolv -lpthread
 clean:
-	rm ./*.o $(TARGET)
+	rm ./io_multiplex_server

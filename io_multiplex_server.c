@@ -3,6 +3,8 @@
 /* marco definitions */
 #define LISTEN_SOCKET_BACKLOG_NUM    (512)
 #define MAX_FD_NUM                   (2048)
+#define RECV_BUF_SIZE                (4096)
+
 
 
 /* structure or function pointer definitions */
@@ -25,6 +27,9 @@ typedef struct
 
 /* variable definitions */
 static monitor_event_loop g_monitor_event_loop;
+
+/* function declarations */
+static void *process_recv_data_thread(void *p_data);
 
 /* function definitions */
 int init_monitor_event_loop(void)
@@ -160,15 +165,39 @@ CREATE_LISTEN_SOCKET_ERR_END:
 void accept_new_socket(EVENT_TYPE event, void *p_data)
 {
 	/* local variables definitions */
-	int new_sock_fd = -1;
+	int *p_new_sock_fd = NULL;
+	pthread_t thread_id =0;
 	
 	/* code body */
 	if (event & EVENT_TYPE_READ)
 	{
-		new_sock_fd = accept((int)p_data, NULL, NULL);
-		if (-1 != new_sock_fd)
+		p_new_sock_fd = malloc(sizeof(int));
+		if (NULL != p_new_sock_fd)
 		{
-			close(new_sock_fd);
+			*p_new_sock_fd = accept((int)p_data, NULL, NULL);
+			if (-1 != *p_new_sock_fd)
+			{
+				if (0 == pthread_create(&thread_id, NULL, process_recv_data_thread, p_new_sock_fd))
+				{
+					pthread_detach(thread_id);
+				}
+			}
 		}
 	}
+}
+
+
+static void *process_recv_data_thread(void *p_data)
+{
+	/* local variables definitions */
+	int recv_num = 0;
+	int new_socket_fd = *((int*)p_data);
+	char recv_buff[RECV_BUF_SIZE] = {0};
+	
+	/* code body */
+	while ((recv_num = recv(new_socket_fd, recv_buff, sizeof(recv_buff), 0)) > 0)
+	{
+	}
+	close(new_socket_fd);
+	free(p_data);
 }

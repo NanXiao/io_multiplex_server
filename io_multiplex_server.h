@@ -17,6 +17,8 @@
 #include <sys/ioctl.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <pthread.h>
+
 
 /* marco definitions */
 #define IP_ADDR_LEN    (16)
